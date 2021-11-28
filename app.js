@@ -46,40 +46,37 @@ client.on('message', (channel, tags, message, self) => {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
-    /**
+    
     // Add bot Function
     function addme(){
-        if (TWITCH_CHANNELS.includes(`${tags.username}`)) {
-            console.log(`${TWITCH_CHANNELS}`);
+        if (process.env.TWITCH_CHANNELS.includes(`${tags.username}`)) {
+            console.log(process.env.TWITCH_CHANNELS);
             client.say(channel, 'Already added, !removeme to remove me from your channel');
         } else {
-            TWITCH_CHANNELS = TWITCH_CHANNELS.concat(`,#${tags.username}`)
-            .then(function(twitchChannels) {
-                return twitchChannels;
-            });
-            console.log(`${TWITCH_CHANNELS}`);
-            client.say(channel, 'adding,,,,');
+            process.env.TWITCH_CHANNELS = process.env.TWITCH_CHANNELS.concat(`,#${tags.username}`);
+            console.log(process.env.TWITCH_CHANNELS);
+            client.say(channel, 'adding...');
         }
         return;
     }
 
     // Remove bot Function
     function removeme(){
-        if (TWITCH_CHANNELS.includes(`${tags.username},`)) {
-            TWITCH_CHANNELS = TWITCH_CHANNELS.replace(`${tags.username},`,'');
-            console.log(`${TWITCH_CHANNELS}`);
-            client.say(channel, 'removing....');
-        } else if (TWITCH_CHANNELS.includes(`${tags.username}`)) {
-            TWITCH_CHANNELS = TWITCH_CHANNELS.replace(`${tags.username}`,'');
-            console.log(`${TWITCH_CHANNELS}`);
-            client.say(channel, 'removing....');
+        if (process.env.TWITCH_CHANNELS.includes(`${tags.username},`)) {
+            process.env.TWITCH_CHANNELS = process.env.TWITCH_CHANNELS.replace(`${tags.username},`,'');
+            console.log(process.env.TWITCH_CHANNELS);
+            client.say(channel, 'removing...');
+        } else if (process.env.TWITCH_CHANNELS.includes(`${tags.username}`)) {
+            process.env.TWITCH_CHANNELS = process.env.TWITCH_CHANNELS.replace(`${tags.username}`,'');
+            console.log(process.env.TWITCH_CHANNELS);
+            client.say(channel, 'removing...');
         } else {
-            console.log(`${TWITCH_CHANNELS}`);
+            console.log(process.env.TWITCH_CHANNELS);
             client.say(channel, 'Already removed, !addme to add me to your channel');
         }
         return;
     }
-    */
+    
 
     // Auto accept/deny duel randomly Function
     async function duel(){
@@ -409,7 +406,7 @@ client.on('message', (channel, tags, message, self) => {
         }
     }
 
-    /**
+    // Listen only on bot's channel
     if (channel.includes(process.env.TWITCH_USERNAME)) {
         switch (message.toLowerCase()) {
             case '!addme':
@@ -425,7 +422,7 @@ client.on('message', (channel, tags, message, self) => {
                 
         }
     }
-    */
+    
 
     /**
     // Commands without input
