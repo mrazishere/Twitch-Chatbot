@@ -87,11 +87,11 @@ client.on('message', (channel, tags, message, self) => {
         // StreamElements: @mraiishere, @MrAZisHere wants to duel you for 0 Mingion Chokes, you can !accept or !deny within 2 minutes
         input = message.split(" ");
         var random_boolean = Math.random() < 0.5;
-        if (input[0]  ==  '@mraiishere,') {
+        if (input[0]  ==  `@${process.env.TWITCH_USERNAME},`) {
             await sleep(2000);
             if (random_boolean){
                 console.log(random_boolean);
-                client.say(channel, '!accept ' + input[1] + ', I am not afraid of you! Gimme that ' + input[7] + ' chokes');
+                client.say(channel, '!accept ' + input[1] + ', I am not afraid of you! Gimme that ' + input[7] + ' points');
             } else {
                 console.log(random_boolean);
                 client.say(channel, '!deny ' + input[1] + ', nah, i dont feel like gambling now!');
@@ -309,7 +309,7 @@ client.on('message', (channel, tags, message, self) => {
             console.log('No input');
             client.say(channel, 'No input provided, !yoda<SPACE>Text to be translated');
         } else {
-            const fetchResponse = await fetch('http://api.funtranslations.com/translate/yoda?text=' + input, {method: 'GET', headers: {'accept': 'application/json', 'content-type': 'application/json', 'X-Funtranslations-Api-Secret': 'Y7Il6xp8eYHKe_VroVxZ3weF'}})
+            const fetchResponse = await fetch('http://api.funtranslations.com/translate/yoda?text=' + input, {method: 'GET', headers: {'accept': 'application/json', 'content-type': 'application/json', 'X-Funtranslations-Api-Secret': `${process.env.API_FUNTRANSLATION_SECRET}`}})
             .then(response => {
                 if (response.ok) {
                     response.json().then((data) => {
