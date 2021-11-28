@@ -4,8 +4,6 @@ require('dotenv').config();
 const fetch = require('cross-fetch');
 const tmi = require('tmi.js');
 
-let TWITCH_CHANNELS = "#mraiishere,#mingxthing,#echantv,#sashimistreamz,#commander_rc";
-
 // Setup connection configurations
 // These include the channel, username and password
 const client = new tmi.Client({
@@ -21,7 +19,7 @@ const client = new tmi.Client({
         username: `${process.env.TWITCH_USERNAME}`,
         password: `${process.env.TWITCH_OAUTH}`
     },
-    channels: TWITCH_CHANNELS.split(',')
+    channels: process.env.TWITCH_CHANNELS.split(',')
 });
 
 // Connect to the channel specified using the setings found in the configurations
