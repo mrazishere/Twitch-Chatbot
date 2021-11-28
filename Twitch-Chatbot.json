@@ -1,0 +1,12 @@
+{
+    "apps": [{
+        "name": "Twitch-Chatbot",
+        "script": "app.js",
+        "watch": true
+    },
+    {
+        "name": "Twitch-Translator",
+        "script": "translate.js",
+        "watch": true
+    }]
+}
