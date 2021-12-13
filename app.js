@@ -35,7 +35,7 @@ client.on('message', (channel, tags, message, self) => {
     // The outputs shall be in the chats
     
     const badges = tags.badges || {};
-    const isBroadcaster = badges.broadcaster || (`${tags.username}` == `${process.env.TWITCH_OWNER}`);
+    const isBroadcaster = badges.broadcaster || (`${tags.username}` == `${process.env.TWITCH_USERNAME}`);
     const isMod = badges.moderator;
     const isVIP = badges.vip;
     const isModUp = isBroadcaster || isMod;
@@ -47,6 +47,12 @@ client.on('message', (channel, tags, message, self) => {
     }
 
     
+    /**
+     * In development: to listen to chatbot chat for request to add or remove chatbot from twitch streamer chat
+     * should automatically add into channel list and reload bot.
+     * 
+    
+
     // Add bot Function
     function addme(){
         if (process.env.TWITCH_CHANNELS.includes(`${tags.username}`)) {
@@ -76,7 +82,7 @@ client.on('message', (channel, tags, message, self) => {
         }
         return;
     }
-    
+     */
 
     // Auto accept/deny duel randomly Function
     async function duel(){
