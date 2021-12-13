@@ -30,15 +30,7 @@ const opts = {
     username: botname,
     password: botpassword
   },
-  channels: [
-    // using bot's channel is great for testing, but not mandatory
-    '#mraiishere' ,
-    '#mingxthing' ,
-    '#echantv',
-    '#sashimistreamz',
-    '#commander_rc'
-    //more channels
-  ],
+  channels: process.env.TWITCH_CHANNELS.split(','),
   // Automatic reconnection
   connection: { reconnect: true }
 };
