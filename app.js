@@ -3,6 +3,7 @@
 require('dotenv').config();
 const fetch = require('cross-fetch');
 const tmi = require('tmi.js');
+const fs = require('fs');
 
 // Setup connection configurations
 // These include the channel, username and password
@@ -26,6 +27,14 @@ const client = new tmi.Client({
 // Any error found shall be logged out in the console
 client.connect().catch(console.error);
 
+    // Sleep function
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+    
+    // Get Minutes Function
+    function getMinutesUntilNextHour() { return 60 - new Date().getMinutes(); } 
+
 // When the bot is on, it shall fetch the messages send by user from the specified channel
 client.on('message', (channel, tags, message, self) => {
     // Lack of this statement or it's inverse (!self) will make it in active
@@ -40,49 +49,75 @@ client.on('message', (channel, tags, message, self) => {
     const isVIP = badges.vip;
     const isModUp = isBroadcaster || isMod;
     const isVIPUp = isVIP || isModUp;
-
-    // sleep function
-    function sleep(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
-
     
     /**
      * In development: to listen to chatbot chat for request to add or remove chatbot from twitch streamer chat
-     * should automatically add into channel list and reload bot.
+     * should automatically add into channel list.
      * 
-    
+     * !addme will add requestor to TWITCH_CHANNEL in .env
+     * !removeme will remove requestor from TWITCH_CHANNEL in .env
+     * Hourly Cron Job reloads bot before changes will take effect.
+     * 
+     * TODO: Find a way to automatically reload bot on .env file change instead of relying on hourly cron job
+     * 
+     */
 
     // Add bot Function
     function addme(){
-        if (process.env.TWITCH_CHANNELS.includes(`${tags.username}`)) {
+        let file = fs.readFileSync(".env", "utf8");
+        let arr = file.split(/\r?\n/);
+        arr.forEach((line, idx)=> {
+            if(line.includes("TWITCH_CHANNELS")){
+                twitchChannels = line.split("=").pop();
+                twitchChannelsArray = twitchChannels.split(",");
+                console.log(twitchChannelsArray);
+            }
+        });
+
+        if (twitchChannelsArray.includes(`#${tags.username}`)) {
             console.log(process.env.TWITCH_CHANNELS);
             client.say(channel, 'Already added, !removeme to remove me from your channel');
+        } else if(twitchChannelsArray.length < 20) {
+            fs.appendFile('.env', ',#'+`${tags.username}`, function (err) {
+                if (err) throw err;
+                console.log('adding...');
+                client.say(channel, `Added successfully to ${tags.username}. Bot refreshes hourly, check back in ` + getMinutesUntilNextHour() + ' minutes. Whisper @MrAZisHere if you have any questions.');
+            });
         } else {
-            process.env.TWITCH_CHANNELS = process.env.TWITCH_CHANNELS.concat(`,#${tags.username}`);
-            console.log(process.env.TWITCH_CHANNELS);
-            client.say(channel, 'adding...');
+            client.say(channel, 'Sorry, automatic addition is currently disabled, please whisper @MrAZisHere to request manually.');
         }
         return;
     }
 
     // Remove bot Function
     function removeme(){
-        if (process.env.TWITCH_CHANNELS.includes(`${tags.username},`)) {
-            process.env.TWITCH_CHANNELS = process.env.TWITCH_CHANNELS.replace(`${tags.username},`,'');
-            console.log(process.env.TWITCH_CHANNELS);
-            client.say(channel, 'removing...');
-        } else if (process.env.TWITCH_CHANNELS.includes(`${tags.username}`)) {
-            process.env.TWITCH_CHANNELS = process.env.TWITCH_CHANNELS.replace(`${tags.username}`,'');
-            console.log(process.env.TWITCH_CHANNELS);
-            client.say(channel, 'removing...');
+        let file = fs.readFileSync(".env", "utf8");
+        let arr = file.split(/\r?\n/);
+        arr.forEach((line, idx)=> {
+            if(line.includes("TWITCH_CHANNELS")){
+                twitchChannels = line.split("=").pop();
+                twitchChannelsArray = twitchChannels.split(",");
+                console.log(twitchChannelsArray);
+            }
+        });
+        if (twitchChannelsArray.includes(`#${tags.username}`)) {
+            twitchChannelsArrayNew = twitchChannelsArray.filter(e => e !== `#${tags.username}`);
+            twitchChannelsNew = twitchChannelsArrayNew.join(",");
+            fs.readFile(".env", {encoding: 'utf8'}, function (err,data) {
+                var formatted = data.replace(new RegExp( twitchChannels, 'g' ), twitchChannelsNew);
+                fs.writeFile(".env", formatted, 'utf8', function (err) {
+                    if (err) return console.log(err);
+                });
+            });
+            console.log(twitchChannelsNew);
+            client.say(channel, `Removed successfully from ${tags.username}. Bot refreshes hourly, check back in ` + getMinutesUntilNextHour() + ' minutes. Whisper @MrAZisHere if you have any questions.');
         } else {
             console.log(process.env.TWITCH_CHANNELS);
             client.say(channel, 'Already removed, !addme to add me to your channel');
         }
         return;
     }
-     */
+    
 
     // Auto accept/deny duel randomly Function
     async function duel(){
@@ -446,8 +481,8 @@ client.on('message', (channel, tags, message, self) => {
                 addme();
                 break;
             case '!removeme':
-                    removeme();
-                    break;
+                removeme();
+                break;
             default:
                 // We shall convert the message into a string in which we shall check for its first word
                 // and use the others for output
