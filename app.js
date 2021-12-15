@@ -76,7 +76,7 @@ client.on('message', (channel, tags, message, self) => {
 
         if (twitchChannelsArray.includes(`#${tags.username}`)) {
             console.log(process.env.TWITCH_CHANNELS);
-            client.say(channel, 'Already added, !removeme to remove me from your channel');
+            client.say(channel, 'Error: Already added, !removeme to remove me from your channel');
         } else if(twitchChannelsArray.length < 20) {
             fs.appendFile('.env', ',#'+`${tags.username}`, function (err) {
                 if (err) throw err;
@@ -113,7 +113,7 @@ client.on('message', (channel, tags, message, self) => {
             client.say(channel, `Removed successfully from ${tags.username}. Bot refreshes hourly, check back in ` + getMinutesUntilNextHour() + ' minutes. Whisper @MrAZisHere if you have any questions.');
         } else {
             console.log(process.env.TWITCH_CHANNELS);
-            client.say(channel, 'Already removed, !addme to add me to your channel');
+            client.say(channel, 'Error: Already removed, !addme to add me to your channel');
         }
         return;
     }
