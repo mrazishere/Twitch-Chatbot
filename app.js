@@ -27,13 +27,15 @@ const client = new tmi.Client({
 // Any error found shall be logged out in the console
 client.connect().catch(console.error);
 
-    // Sleep function
-    function sleep(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
+// Sleep/delay function
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
     
-    // Get Minutes Function
-    function getMinutesUntilNextHour() { return 60 - new Date().getMinutes(); } 
+// Get number of minutes to the next hour Function
+function getMinutesUntilNextHour() {
+    return 60 - new Date().getMinutes();
+} 
 
 // When the bot is on, it shall fetch the messages send by user from the specified channel
 client.on('message', (channel, tags, message, self) => {
@@ -43,6 +45,7 @@ client.on('message', (channel, tags, message, self) => {
     // The input shall be converted to lowercase form first
     // The outputs shall be in the chats
     
+    // Set variables for user permission logic
     const badges = tags.badges || {};
     const isBroadcaster = badges.broadcaster || (`${tags.username}` == `${process.env.TWITCH_USERNAME}`);
     const isMod = badges.moderator;
@@ -78,10 +81,15 @@ client.on('message', (channel, tags, message, self) => {
             console.log(process.env.TWITCH_CHANNELS);
             client.say(channel, 'Error: Already added, !removeme to remove me from your channel');
         } else if(twitchChannelsArray.length < 20) {
-            fs.appendFile('.env', ',#'+`${tags.username}`, function (err) {
-                if (err) throw err;
-                console.log('adding...');
-                client.say(channel, `Added successfully to ${tags.username}. Bot refreshes hourly, check back in ` + getMinutesUntilNextHour() + ' minutes. Whisper @MrAZisHere if you have any questions.');
+            twitchChannelsArray.push(`#${tags.username}`);
+            twitchChannelsNew = twitchChannelsArray.join(",");
+            fs.readFile(".env", {encoding: 'utf8'}, function (err,data) {
+                var formatted = data.replace(new RegExp( twitchChannels, 'g' ), twitchChannelsNew);
+                fs.writeFile(".env", formatted, 'utf8', function (err) {
+                    if (err) return console.log(err);
+                    console.log('adding...');
+                    client.say(channel, `Added successfully to ${tags.username}. Bot refreshes hourly, check back in ` + getMinutesUntilNextHour() + ' minutes. Whisper @MrAZisHere if you have any questions.');
+                });
             });
         } else {
             client.say(channel, 'Sorry, automatic addition is currently disabled, please whisper @MrAZisHere to request manually.');
