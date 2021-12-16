@@ -25,17 +25,23 @@ if ((botname == undefined) || (botpassword == undefined)) {
 // add oauth: before botpassword
 //botpassword = 'oauth:' + botpassword;
 
-const opts = {
-  identity: {
-    username: botname,
-    password: botpassword
+// Setup connection configurations
+// These include the channel, username and password
+const client = new tmi.Client({
+  options: { debug: true, messagesLogLevel: "info" },
+  connection: {
+      reconnect: true,
+      secure: true
   },
-  channels: process.env.TWITCH_CHANNELS.split(','),
-  // Automatic reconnection
-  connection: { reconnect: true }
-};
-// Create a client with our options
-const client = new tmi.client(opts);
+
+  // Lack of the identity tags makes the bot anonymous and able to fetch messages from the channel
+  // for reading, supervision, spying, or viewing purposes only
+  identity: {
+      username: `${process.env.TWITCH_USERNAME}`,
+      password: `${process.env.TWITCH_OAUTH}`
+  },
+  channels: process.env.TWITCH_CHANNELS.split(',')
+});
 
 const tr_lang = {
   'de': ['de', 'sagt'],
@@ -53,8 +59,9 @@ const tr_lang = {
 client.on('message', onMessageHandler);
 client.on('connected', onConnectedHandler);
 
-// Connect to Twitch:
-client.connect();
+// Connect to the channel specified using the setings found in the configurations
+// Any error found shall be logged out in the console
+client.connect().catch(console.error);
 
 // Called every time a message comes in
 function onMessageHandler(target, context, msg, self) {
