@@ -93,7 +93,7 @@ client.on('message', (channel, tags, message, self) => {
               fs.writeFile("channel_list.js", formatted, 'utf8', function (err) {
                 if (err) return console.log(err);
                 console.log('adding...');
-                client.say(channel, `Added successfully to ${tags.username}. Bot refreshes hourly, check back in ` + getMinutesUntilNextHour() + ' minutes. Whisper @MrAZisHere if you have any questions.');
+                client.say(channel, 'Added successfully to ${tags.username}. Check my about page for available commands. Whisper @MrAZisHere if you have any questions.');
               });
             });
         } else {
@@ -124,7 +124,7 @@ client.on('message', (channel, tags, message, self) => {
                 });
             });
             console.log('removing...');
-            client.say(channel, `Removed successfully from ${tags.username}. Bot refreshes hourly, check back in ` + getMinutesUntilNextHour() + ' minutes. Whisper @MrAZisHere if you have any questions.');
+            client.say(channel, 'Removed successfully from ${tags.username}. Whisper @MrAZisHere if you have any questions.');
         } else {
             console.log(Channel_List);
             client.say(channel, 'Error: Already removed, !addme to add me to your channel');

@@ -3,7 +3,6 @@ module.exports = {
       {
         name: "Twitch-Chatbot",
         script: "app.js",
-        cron_restart: "0 * * * *",
         watch: true,
         watch_options: {
           usePolling: true,
