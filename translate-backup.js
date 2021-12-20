@@ -47,12 +47,13 @@ const tr_lang = {
   'de': ['de', 'sagt'],
   'en': ['en', 'says'],
   'fr': ['fr', 'dit'],
-  'pt': ['pt', 'disse'],
-  'cn': ['zh', 'says'],
+  'cn': ['zh-cn', 'says'],
   'tl': ['tl', 'says'],
   'jp': ['ja', 'says'],
   'kr': ['ko', 'says'],
-  'id': ['id', 'says']
+  'id': ['id', 'says'],
+  'bm': ['ms', 'kata'],
+  'th': ['th', 'says'],
 };
 
 // Register our event handlers (defined below)

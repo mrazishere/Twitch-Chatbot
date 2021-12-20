@@ -4,6 +4,7 @@ require('dotenv').config();
 const fetch = require('cross-fetch');
 const tmi = require('tmi.js');
 const fs = require('fs');
+const gtrans = require('googletrans').default;
 const {Channel_List} = require('./channel_list.js')
 
 // Setup connection configurations
@@ -28,15 +29,25 @@ const client = new tmi.Client({
 // Any error found shall be logged out in the console
 client.connect().catch(console.error);
 
+// Set variables for Translate script
+const tr_lang = {
+  'de': ['de', 'sagt'],
+  'en': ['en', 'says'],
+  'fr': ['fr', 'dit'],
+  'pt': ['pt', 'disse'],
+  'cn': ['zh', 'says'],
+  'tl': ['tl', 'says'],
+  'jp': ['ja', 'says'],
+  'kr': ['ko', 'says'],
+  'id': ['id', 'says'],
+  'bm': ['ms', 'kata'],
+  'th': ['th', 'says'],
+};
+
 // Sleep/delay function
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
-    
-// Get number of minutes to the next hour Function
-function getMinutesUntilNextHour() {
-    return 60 - new Date().getMinutes();
-} 
 
 // When the bot is on, it shall fetch the messages send by user from the specified channel
 client.on('message', (channel, tags, message, self) => {
@@ -53,16 +64,102 @@ client.on('message', (channel, tags, message, self) => {
     const isVIP = badges.vip;
     const isModUp = isBroadcaster || isMod;
     const isVIPUp = isVIP || isModUp;
-    
+
+    //
+    // TRANSLATE SCRIPT MERGED INTO MAIN APP
+    //
+
+    // Remove whitespace from chat message
+    let tMsg = message.trim();
+
+    // Check if the message starts with @name
+    // in that case, extract the name and move the @name at the end of the message, and process
+    if (tMsg[0] === '@') {
+      let atnameEndIndex = tMsg.indexOf(' ');
+      let atname = tMsg.substring(0, atnameEndIndex);
+      let message = tMsg.substring(atnameEndIndex + 1);
+      tMsg = message + ' ' + atname;
+      console.info('Changed message :', tMsg);
+    }
+
+    // Filter commands (options)
+    if (tMsg[0] != '!') return;
+
+    // Extract command
+    let cmd = tMsg.split(' ')[0].substring(1).toLowerCase();
+
+    // Name for answering
+    let answername = '@' + `${tags.username}`;
+
+    // Command for displaying the commands (in english)
+    if (cmd === "lang" || cmd === "translate") {
+      client.say(channel, 'I can (approximatevely) translate your messages in many languages. Simply start your message with one of these commands: !en (english) !cn (chinese) !fr (french) !de (german) !pt (portuguese)... ');
+      return;
+    }
+
+    // Commands for displaying messages explaining the translation feature in various languages
+    // TODO: sentences
+    const explanations = {
+      //    'germans': '',
+      //    'spanish': '',
+      'english': 'You can use our Translator Bot. Start your message by typing !en To translate your message into English. For example: "!en Bonjour"',
+      'chinese': 'Awaiting Chinese Explanation....',
+      'japanese': 'Awaiting Japanese Explanation....',
+      'korean': 'Awaiting Korean Explanation....',
+      'tagalog': 'Awaiting Tagalog Explanation....',
+      'indonesian': 'Awaiting Indonesian Explanation....',
+      'french': 'Vous pouvez utiliser notre bot traducteur. Commencez votre message par !en pour traduire votre message en anglais. Par exemple "!en Bonjour"',
+    }
+    if (cmd in explanations) {
+      client.say(channel, explanations[cmd]);
+      return;
+    }
+
+    if (cmd in tr_lang) {
+      var ll = tr_lang[cmd];
+      //console.error(ll);
+      var txt = tMsg.substring(1 + cmd.length);
+
+      // Text must be at least 2 characters and max 200 characters
+      var lazy = false;
+      if (txt.length > 2) {
+        if (txt.length > 200) {
+          lazy = true;
+          txt = "i'm too lazy to translate long sentences ^^";
+        }
+
+        // Lazy mode, and english target => no translation, only displays 'lazy' message in english
+        if ((lazy === true) && (ll[0].indexOf('en') == 0)) {
+          say(channel, `${tags.username}` + ', ' + txt);
+          return;
+        }
+
+        // Translate text
+        gtrans(txt, { to: ll[0] }).then(res => {
+          if (lazy === true) {
+            // lazy mode sentence in english and also in requested language
+            client.say(channel, `${tags.username}` + ', ' + txt + '/' + res.text);
+          }
+          else {
+            // Translation
+            // TODO: Check is translated text == original text. In that case it
+            // means the command was not correctly used (ex: "!en hello friends")
+            client.say(channel, `${tags.username}` + ' ' + ll[1] + ': ' + res.text);
+          }
+        }).catch(err => {
+          console.error('Translation Error:', err);
+        })
+      }
+    }
+
     /**
      * In development: to listen to chatbot chat for request to add or remove chatbot from twitch streamer chat
      * should automatically add into channel list.
      * 
-     * !addme will add requestor to TWITCH_CHANNEL in .env
-     * !removeme will remove requestor from TWITCH_CHANNEL in .env
-     * Hourly Cron Job reloads bot before changes will take effect.
-     * 
-     * TODO: Find a way to automatically reload bot on .env file change instead of relying on hourly cron job
+     * !addme will add requestor to TWITCH_CHANNEL in channel_list.js
+     * !removeme will remove requestor from TWITCH_CHANNEL in channel_list.js
+     * App will be restarted automatically on file change with nodemon for immediate effect
+     * No longer require cron job to restart app hourly
      * 
      */
 
