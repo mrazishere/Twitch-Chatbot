@@ -4,7 +4,6 @@ require('dotenv').config();
 const fetch = require('cross-fetch');
 const tmi = require('tmi.js');
 const fs = require('fs');
-const {Channel_List} = require('./channel_list.js')
 
 // Setup connection configurations
 // These include the channel, username and password
@@ -21,7 +20,7 @@ const client = new tmi.Client({
         username: `${process.env.TWITCH_USERNAME}`,
         password: `${process.env.TWITCH_OAUTH}`
     },
-    channels: Channel_List
+    channels: process.env.TWITCH_CHANNELS.split(',')
 });
 
 // Connect to the channel specified using the setings found in the configurations
@@ -68,33 +67,29 @@ client.on('message', (channel, tags, message, self) => {
 
     // Add bot Function
     function addme(){
-        let file = fs.readFileSync("channel_list.js", "utf8");
+        let file = fs.readFileSync(".env", "utf8");
         let arr = file.split(/\r?\n/);
         arr.forEach((line, idx)=> {
-            if(line.includes("var Channel_List")){
-                twitchChannelsArrayString = line.split("= ").pop();
-                twitchChannelsArray = JSON.parse(twitchChannelsArrayString.replace(/'/g, '"'));
+            if(line.includes("TWITCH_CHANNELS")){
+                twitchChannels = line.split("=").pop();
+                twitchChannelsArray = twitchChannels.split(",");
+                console.log(twitchChannelsArray);
             }
         });
-        
+
         if (twitchChannelsArray.includes(`#${tags.username}`)) {
-            console.log(Channel_List);
+            console.log(process.env.TWITCH_CHANNELS);
             client.say(channel, 'Error: Already added, !removeme to remove me from your channel');
         } else if(twitchChannelsArray.length < 20) {
             twitchChannelsArray.push(`#${tags.username}`);
-            twitchChannelsArrayNewString = JSON.stringify(twitchChannelsArray);
-            console.log(Channel_List);
-            console.log(twitchChannelsArrayString);
-            console.log(twitchChannelsArrayNewString);
-            fs.readFile("channel_list.js", {encoding: 'utf8'}, function (err,data) {
-              const regex = /^var.*/gm;
-              const string1 = 'var Channel_List = ';
-              var formatted = string1.concat(data.replace(regex, twitchChannelsArrayNewString));
-              fs.writeFile("channel_list.js", formatted, 'utf8', function (err) {
-                if (err) return console.log(err);
-                console.log('adding...');
-                client.say(channel, `Added successfully to ${tags.username}. Bot refreshes hourly, check back in ` + getMinutesUntilNextHour() + ' minutes. Whisper @MrAZisHere if you have any questions.');
-              });
+            twitchChannelsNew = twitchChannelsArray.join(",");
+            fs.readFile(".env", {encoding: 'utf8'}, function (err,data) {
+                var formatted = data.replace(new RegExp( twitchChannels, 'g' ), twitchChannelsNew);
+                fs.writeFile(".env", formatted, 'utf8', function (err) {
+                    if (err) return console.log(err);
+                    console.log('adding...');
+                    client.say(channel, `Added successfully to ${tags.username}. Bot refreshes hourly, check back in ` + getMinutesUntilNextHour() + ' minutes. Whisper @MrAZisHere if you have any questions.');
+                });
             });
         } else {
             client.say(channel, 'Sorry, automatic addition is currently disabled, please whisper @MrAZisHere to request manually.');
@@ -104,29 +99,28 @@ client.on('message', (channel, tags, message, self) => {
 
     // Remove bot Function
     function removeme(){
-        let file = fs.readFileSync("channel_list.js", "utf8");
+        let file = fs.readFileSync(".env", "utf8");
         let arr = file.split(/\r?\n/);
         arr.forEach((line, idx)=> {
-            if(line.includes("var Channel_List")){
-                twitchChannelsArrayString = line.split("= ").pop();
-                twitchChannelsArray = JSON.parse(twitchChannelsArrayString.replace(/'/g, '"'));
+            if(line.includes("TWITCH_CHANNELS")){
+                twitchChannels = line.split("=").pop();
+                twitchChannelsArray = twitchChannels.split(",");
+                console.log(twitchChannelsArray);
             }
         });
         if (twitchChannelsArray.includes(`#${tags.username}`)) {
             twitchChannelsArrayNew = twitchChannelsArray.filter(e => e !== `#${tags.username}`);
-            twitchChannelsArrayNewString = JSON.stringify(twitchChannelsArrayNew);
-            fs.readFile("channel_list.js", {encoding: 'utf8'}, function (err,data) {
-              const regex = /^var.*/gm;
-              const string1 = 'var Channel_List = ';
-              var formatted = string1.concat(data.replace(regex, twitchChannelsArrayNewString));
-                fs.writeFile("channel_list.js", formatted, 'utf8', function (err) {
+            twitchChannelsNew = twitchChannelsArrayNew.join(",");
+            fs.readFile(".env", {encoding: 'utf8'}, function (err,data) {
+                var formatted = data.replace(new RegExp( twitchChannels, 'g' ), twitchChannelsNew);
+                fs.writeFile(".env", formatted, 'utf8', function (err) {
                     if (err) return console.log(err);
                 });
             });
-            console.log('removing...');
+            console.log(twitchChannelsNew);
             client.say(channel, `Removed successfully from ${tags.username}. Bot refreshes hourly, check back in ` + getMinutesUntilNextHour() + ' minutes. Whisper @MrAZisHere if you have any questions.');
         } else {
-            console.log(Channel_List);
+            console.log(process.env.TWITCH_CHANNELS);
             client.say(channel, 'Error: Already removed, !addme to add me to your channel');
         }
         return;
