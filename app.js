@@ -42,6 +42,8 @@ const tr_lang = {
   'id': ['id', 'says'],
   'bm': ['ms', 'kata'],
   'th': ['th', 'says'],
+  'pinyin': ['zh', 'says'],
+  'romaji': ['ja', 'says']
 };
 
 // Sleep/delay function
@@ -136,18 +138,30 @@ client.on('message', (channel, tags, message, self) => {
 
         // Translate text
         gtrans(txt, { to: ll[0] }).then(res => {
-          if (lazy === true) {
-            // lazy mode sentence in english and also in requested language
-            client.say(channel, `${tags.username}` + ', ' + txt + '/' + res.text);
-          }
-          else {
-            // Translation
-            // TODO: Check is translated text == original text. In that case it
-            // means the command was not correctly used (ex: "!en hello friends")
-            client.say(channel, `${tags.username}` + ' ' + ll[1] + ': ' + res.text);
-          }
+            if (cmd == 'pinyin') {
+                gtrans(txt, { to: 'en' }).then(enres => {
+                    client.say(channel, `${tags.username}` + '| pinyin: ' + res.pronunciation + ' | english: ' + enres.text);
+                }).catch(err => {
+                    console.error('Translation Error:', err);
+                })
+            } else if (cmd == 'romaji') {
+                gtrans(txt, { to: 'en' }).then(enres => {
+                    client.say(channel, `${tags.username}` + '| romaji: ' + res.pronunciation + ' | english: ' + enres.text);
+                }).catch(err => {
+                    console.error('Translation Error:', err);
+                })
+            } else if (lazy === true) {
+                // lazy mode sentence in english and also in requested language
+                client.say(channel, `${tags.username}` + ', ' + txt + '/' + res.text);
+            }
+            else {
+                // Translation
+                // TODO: Check is translated text == original text. In that case it
+                // means the command was not correctly used (ex: "!en hello friends")
+                client.say(channel, `${tags.username}` + ' ' + ll[1] + ': ' + res.text);
+            }
         }).catch(err => {
-          console.error('Translation Error:', err);
+            console.error('Translation Error:', err);
         })
       }
     }
@@ -474,9 +488,40 @@ client.on('message', (channel, tags, message, self) => {
         return;
     }
 
+    /**
+    // Pinyin Converter Function
+    async function pinyin(){
+        input = message.slice(8)
+        if(input === "") {
+            console.log('No input');
+            client.say(channel, 'No input provided, !pinyin<SPACE>Chinese text to be converted to Pinyin');
+        } else {
+            const fetchResponse = await fetch(encodeURI('https://helloacm.com/api/pinyin/?cached&s=' + input))
+            .then(response => {
+                if (response.ok) {
+                    response.json().then((data) => {
+                        var outputArr = JSON.parse(JSON.stringify(data));
+                        sleep(1000);
+                        var output = outputArr['result'].join(' ');
+                        console.log(output);
+                        client.say(channel, output);
+                        //console.log(data);
+                    });
+                } else {
+                    client.say(channel, "Sorry, API is unavailable right now. Please try again later.");
+                }
+            }).
+            catch(error => {
+                  console.log(error);
+            });
+        }
+        return;
+    }
+     */
+
     // Yoda Translation Function
     async function yoda(){
-        input = message.slice(11)
+        input = message.slice(6)
         if(input === "") {
             console.log('No input');
             client.say(channel, 'No input provided, !yoda<SPACE>Text to be translated');
@@ -572,6 +617,12 @@ client.on('message', (channel, tags, message, self) => {
         numfacts();
     }
 
+    /**
+    if (message.includes("!pinyin")) {
+        pinyin();
+    }
+    */
+
     if (message.includes("!yoda")) {
         yoda();
     }
@@ -586,7 +637,7 @@ client.on('message', (channel, tags, message, self) => {
     }
 
     // Listen only on bot's channel
-    if (channel.includes(process.env.TWITCH_USERNAME)) {
+    if (channel.includes(process.env.TWITCH_USERNAME) || channel.includes(tags.username)) {
         switch (message.toLowerCase()) {
             case '!addme':
                 addme();
@@ -600,8 +651,7 @@ client.on('message', (channel, tags, message, self) => {
                 let mymessage = message.toString();
                 
         }
-    }
-    
+    }   
 
     /**
     // Commands without input
