@@ -1,0 +1,2 @@
+var Channel_List = ["#mryaoaiaiishere","#mingxthing","#commander_rc","#mrazishere","#sashimistreamz","#david_the_mousy","#ma0o0o","#zachseb","#omega_jerxgor","#ejdragon0202","#coryano"]
+module.exports = {Channel_List};
