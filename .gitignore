@@ -71,8 +71,8 @@ typings/
 # dotenv environment variables file
 .env
 .env.test
-#channel_list.js
-#channel_data.js
+channel_list.js
+channel_data.js
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
